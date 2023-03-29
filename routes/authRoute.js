@@ -14,8 +14,7 @@ router.post(
   })
 );
 
-router.get("/logout", (req, res) => {
-  res.clearCookie('sid', {path: '/'});
+router.post("/logout", (req, res) => {
   req.logout();
   res.redirect("/auth/login");
 });

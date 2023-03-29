@@ -1,6 +1,7 @@
 const express = require("express");
 const ejsLayouts = require("express-ejs-layouts");
-
+const checkAuth = require("./routes/authRoute");
+const passport = require("./middleware/passport");
 const session = require("express-session");
 const path = require("path");
 const reminderController = require("./controller/reminder_controller");
@@ -9,6 +10,8 @@ const reminderController = require("./controller/reminder_controller");
 const app = express();
 
 app.set("view engine", "ejs");
+
+
   
 app.use(express.static(path.join(__dirname, "public")));
 app.use(
@@ -23,8 +26,6 @@ app.use(
     },
   })
 );
-
-const passport = require("./middleware/passport");
 
 app.use(ejsLayouts);
 
@@ -78,6 +79,15 @@ app.post("/login", passport.authenticate("local", {
   successRedirect: "/reminders",
   failureRedirect: "/login",
 }));
+
+app.get("/logout", (req, res) => {
+  req.logout(function(err) {
+    if (err) { 
+      return next(err);
+    };
+    res.redirect('login');
+});
+});
 
 app.listen(3001, function () {
   console.log(
