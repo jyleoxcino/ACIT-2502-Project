@@ -18,8 +18,11 @@
     "ejs": "^2.7.4",
     "express": "^4.14.0",
     "express-ejs-layouts": "^2.5.1",
+    "express-session": "^1.17.3",
     "method-override": "^2.3.7",
     "mongoose": "^4.7.7",
-    "nodemon": "^1.19.4"
+    "nodemon": "^1.19.4",
+    "passport": "^0.6.0",
+    "passport-local": "^1.0.0"
   }
 }
