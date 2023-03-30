@@ -1,17 +1,57 @@
 const express = require("express");
-const app = express();
-const path = require("path");
 const ejsLayouts = require("express-ejs-layouts");
+const checkAuth = require("./routes/authRoute");
+const passport = require("./middleware/passport");
+const session = require("express-session");
+const path = require("path");
 const reminderController = require("./controller/reminder_controller");
-const authController = require("./controller/auth_controller");
+// const authController = require("./controller/userController");
 
+const app = express();
+
+app.set("view engine", "ejs");
+
+
+  
 app.use(express.static(path.join(__dirname, "public")));
-
-app.use(express.urlencoded({ extended: false }));
+app.use(
+  session({
+    secret: "secret",
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+      httpOnly: true,
+      secure: false,
+      maxAge: 24 * 60 * 60 * 1000,
+    },
+  })
+);
 
 app.use(ejsLayouts);
 
-app.set("view engine", "ejs");
+app.use(express.urlencoded({ extended: false }));
+
+app.use(passport.initialize());
+app.use(passport.session());
+
+app.use((req, res, next) => {
+  res.locals.user = req.user;
+  console.log(req.user)
+  next();
+})
+
+app.use((req, res, next) => {
+  console.log(`User details are: `);
+  console.log(req.user);
+
+  console.log("Entire session object:");
+  console.log(req.session);
+
+  console.log(`Session details are: `);
+  console.log(req.session.passport);
+  next();
+});
+
 
 // Routes start here
 
@@ -32,10 +72,22 @@ app.post("/reminder/update/:id", reminderController.update);
 app.post("/reminder/delete/:id", reminderController.delete);
 
 // Fix this to work with passport! The registration does not need to work, you can use the fake database for this.
-app.get("/register", authController.register);
-app.get("/login", authController.login);
-app.post("/register", authController.registerSubmit);
-app.post("/login", authController.loginSubmit);
+// app.get("/register", authController.register);
+app.get("/login", (req, res) => res.render("login"));
+// app.post("/register", authController.registerSubmit);
+app.post("/login", passport.authenticate("local", {
+  successRedirect: "/reminders",
+  failureRedirect: "/login",
+}));
+
+app.get("/logout", (req, res) => {
+  req.logout(function(err) {
+    if (err) { 
+      return next(err);
+    };
+    res.redirect('login');
+});
+});
 
 app.listen(3001, function () {
   console.log(
