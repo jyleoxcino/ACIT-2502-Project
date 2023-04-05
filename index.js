@@ -11,8 +11,6 @@ const app = express();
 
 app.set("view engine", "ejs");
 
-
-  
 app.use(express.static(path.join(__dirname, "public")));
 app.use(
   session({
@@ -36,9 +34,9 @@ app.use(passport.session());
 
 app.use((req, res, next) => {
   res.locals.user = req.user;
-  console.log(req.user)
+  console.log(req.user);
   next();
-})
+});
 
 app.use((req, res, next) => {
   console.log(`User details are: `);
@@ -51,7 +49,6 @@ app.use((req, res, next) => {
   console.log(req.session.passport);
   next();
 });
-
 
 // Routes start here
 
@@ -73,21 +70,31 @@ app.post("/reminder/delete/:id", reminderController.delete);
 
 // Fix this to work with passport! The registration does not need to work, you can use the fake database for this.
 // app.get("/register", authController.register);
-app.get("/login", (req, res) => res.render("login"));
+app.get("/login", (req, res) => {
+  console.log(req.session);
+  res.render("login", { error: req.session.messages})
+});
 // app.post("/register", authController.registerSubmit);
-app.post("/login", passport.authenticate("local", {
-  successRedirect: "/reminders",
-  failureRedirect: "/login",
-}));
+app.post(
+  "/login",
+  passport.authenticate("local", {
+    successRedirect: "/reminders",
+    failureRedirect: "/login",
+    failureMessage: true
+  })
+);
 
+// user logout
 app.get("/logout", (req, res) => {
-  req.logout(function(err) {
-    if (err) { 
+  req.logout(function (err) {
+    if (err) {
       return next(err);
-    };
-    res.redirect('login');
+    }
+    res.redirect("/login");
+  });
 });
-});
+
+// 
 
 app.listen(3001, function () {
   console.log(
